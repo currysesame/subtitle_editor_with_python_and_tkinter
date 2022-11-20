@@ -23,11 +23,15 @@ class App:
 
         self.btn_pause_start=tkinter.Button(window, text="pause/start", width=50, command=self.pause_start)
         self.btn_pause_start.pack(anchor=tkinter.CENTER, expand=True)
+
         # After it is called once, the update method will be automatically called every delay milliseconds
         self.delay = 10
 
         self.textWidget = tkinter.Text(window, height = 5, width = 52)
         self.textWidget.pack()
+
+        self.btn_SaveSubtitle=tkinter.Button(window, text="save subtitle", width=50, command=self.saveSubtitle)
+        self.btn_SaveSubtitle.pack(anchor=tkinter.CENTER, expand=True)
 
         self.total_frame_num = self.my_cap.get_total_frame_num()
         self.processBar = tkinter.Scale(window, from_=0, to=self.total_frame_num,length=600,tickinterval=int(self.total_frame_num/10), orient=tkinter.HORIZONTAL)
@@ -68,7 +72,11 @@ class App:
         if(self.start == 0):
             self.start = 1
             return
-
+    def saveSubtitle(self):
+        textContent = self.textWidget.get(1.0, "end-1c")
+        with open(self.video_source[2:-4] + '.txt', 'w') as f:
+            f.write(textContent)
+            f.close()
     # def snapshot(self):
     #     # Get a frame from the video source
     #     ret, frame = self.my_cap.get_frame()
