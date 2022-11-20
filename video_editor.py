@@ -4,6 +4,9 @@ import PIL.Image, PIL.ImageTk
 import time
 from tkinter import filedialog as fd
 import glob
+import moviepy.editor as mp
+
+
 
 class App:
     def __init__(self, window, window_title):
@@ -15,6 +18,15 @@ class App:
         print()
         # open video source (by default this will try to open the computer webcam)
         self.my_cap = MyVideoCapture(self.video_source)
+        self.total_frame_num = self.my_cap.get_total_frame_num()
+        audiofile = glob.glob('./*.mp3')
+        if len(audiofile) == 0:
+            self.fps = self.my_cap.get_fps()
+            self.durationSecond = round(self.total_frame_num / self.fps)
+
+            clip = mp.VideoFileClip(self.video_source).subclip(0,self.durationSecond)
+            clip.audio.write_audiofile(self.video_source[2:-4] + ".mp3")
+
 
         # Create a canvas that can fit the above video source size
         # self.canvas = tkinter.Canvas(window, width = self.my_cap.width, height = self.my_cap.height)
@@ -33,7 +45,7 @@ class App:
         self.btn_SaveSubtitle=tkinter.Button(window, text="save subtitle", width=50, command=self.saveSubtitle)
         self.btn_SaveSubtitle.pack(anchor=tkinter.CENTER, expand=True)
 
-        self.total_frame_num = self.my_cap.get_total_frame_num()
+        
         self.processBar = tkinter.Scale(window, from_=0, to=self.total_frame_num,length=600,tickinterval=int(self.total_frame_num/10), orient=tkinter.HORIZONTAL)
         self.subtitleBar = tkinter.Scale(window, from_=0, to=self.total_frame_num,length=600,tickinterval=int(self.total_frame_num/10), orient=tkinter.HORIZONTAL)
         
@@ -92,7 +104,7 @@ class App:
             self.count10 +=1
             if(self.start == 1):
                 self.count += 1
-            if(self.count10 % 10 == 0):
+            if(self.count10 % 5 == 0):
                 self.count = self.processBar.get()
             self.processBar.set(self.count)
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
@@ -137,7 +149,8 @@ class MyVideoCapture:
         return int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
     def set_frame_in_video(self, number):
         self.vid.set(1, number)
-
+    def get_fps(self):
+        return self.vid.get(cv2.CAP_PROP_FPS)
     # Release the video source when the object is destroyed
     def __del__(self):
         if self.vid.isOpened():
