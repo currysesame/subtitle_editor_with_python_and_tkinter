@@ -164,8 +164,20 @@ class MyVideoCapture:
 # Create a window and pass it to the Application object
 App(tk.Tk(), "Subtitle editor")
 
+# import glob
 
-# ref: https://github.com/ritik48/Music-Player-Tutorial-Codes
+# # ref: https://github.com/ritik48/Music-Player-Tutorial-Codes
+
+# import tkinter as tk
+# from ttkthemes import themed_tk
+# from tkinter import ttk
+# from PIL import Image, ImageTk
+# from tkinter import filedialog
+# from mutagen.mp3 import MP3
+# import os
+# import time
+# import pygame
+
 
 # class MediaPlayer:
 #     def __init__(self, window):
@@ -181,7 +193,6 @@ App(tk.Tk(), "Subtitle editor")
 
 #         self.root.configure(bg="black")
 
-
 #         self.play_icon = Image.open('images/play.png')
 #         self.play_icon = self.play_icon.resize((90, 90), Image.ANTIALIAS)
 #         self.play_icon = ImageTk.PhotoImage(self.play_icon)
@@ -189,16 +200,6 @@ App(tk.Tk(), "Subtitle editor")
 #         self.pause_icon = Image.open('images/pause.png')
 #         self.pause_icon = self.pause_icon.resize((90, 90), Image.ANTIALIAS)
 #         self.pause_icon = ImageTk.PhotoImage(self.pause_icon)
-
-
-#         self.add_song_icon = Image.open('images/song.png')
-#         self.add_song_icon = self.add_song_icon.resize((30, 30), Image.ANTIALIAS)
-#         self.add_song_icon = ImageTk.PhotoImage(self.add_song_icon)
-
-
-
-#         self.heading = tk.Label(self.root, bg="black",text="Music Player",font="lucida 40 bold",fg="#F4B81A")
-#         self.heading.place(x=0,y=2,relwidth=1)
 
 #         tk.Label(self.root, text="",background=background,height=7,width=120).place(x=5,y=400)
 
@@ -215,14 +216,12 @@ App(tk.Tk(), "Subtitle editor")
 #         self.music_duration_label.place(x=460,y=400)
 
 #         self.progress_scale = ttk.Scale(self.root,orient="horizontal",style='TScale',from_=0,length=380,
-#                                         command="command",cursor='hand2')
+#                                         command=self.progress_scale_moved,cursor='hand2')
 #         self.progress_scale.place(x=80,y=400)
 
 #         self.play_button = tk.Button(self.root,image=self.play_icon,command=self.check_play_pause,cursor='hand2',bd=0,
 #                                      background=background,activebackground=background)
 #         self.play_button.place(x=146,y=425)
-
-
 
 
 #         self.status = tk.Label(self.root,text="Playing : ---------- Song : 0 of 0",fg="black",anchor="w",background="grey",
@@ -235,11 +234,10 @@ App(tk.Tk(), "Subtitle editor")
 #         m1 = tk.Menu(self.menu,background="grey",tearoff=False,bd=0,activebackground="black")
 #         self.menu.add_cascade(label="Actions",menu=m1)
 
-#         m1.add_command(label="Add Song",command=self.add_songs,image=self.add_song_icon,compound="left")
+#         m1.add_command(label="Add Song",command=self.add_songs,compound="left")
 
 #         m2 = tk.Menu(self.menu, background="grey", tearoff=False, bd=0, activebackground="black")
 #         self.menu.add_cascade(label="Delete", menu=m2)
-
 
 #         self.directory_list = []
 #         self.pause=False
@@ -257,20 +255,20 @@ App(tk.Tk(), "Subtitle editor")
 #         self.songs_list.select_set('0')
 
 #     def check_play_pause(self):
+#         if self.songs_list.size() >= 1:
+#             self.songs_to_play.append(self.songs_list.get('active'))
 
-#         self.songs_to_play.append(self.songs_list.get('active'))
+#             length=len(self.songs_to_play)
 
-#         length=len(self.songs_to_play)
+#             if len(self.songs_to_play)==1:
+#                 self.play_song()
 
-#         if len(self.songs_to_play)==1:
-#             self.play_song()
+#             elif self.songs_to_play[length-1]!=self.songs_to_play[length-2]:
+#                 self.root.after_cancel(self.updater)
+#                 self.play_song()
 
-#         elif self.songs_to_play[length-1]!=self.songs_to_play[length-2]:
-#             self.root.after_cancel(self.updater)
-#             self.play_song()
-
-#         else:
-#             self.pause_unpause()
+#             else:
+#                 self.pause_unpause()
 
 #     def pause_unpause(self):
 #         if not self.pause:
@@ -295,20 +293,29 @@ App(tk.Tk(), "Subtitle editor")
 #         song_name = self.songs_list.get('active')
 #         self.status.config(text=f"Playing : {song_name} Song : {self.songs_list.index('active')} of "
 #                                 f"{self.songs_list.size()}")
-#         directory_path=None
-#         for dictio in self.directory_list:
-#             if dictio['song'] == song_name:
-#                 directory_path = dictio['path']
 
-#         song_with_path = f'{directory_path}/{song_name}'
-#         music_data = MP3(song_with_path)
+#         self.song_with_path = glob.glob('./*.mp3')[0]
+#         print(self.song_with_path)
+#         music_data = MP3(self.song_with_path)
 #         self.music_length = int(music_data.info.length)
 #         self.music_duration_label['text'] = time.strftime('%M:%S', time.gmtime(self.music_length))
 
 #         self.progress_scale['to'] = self.music_length
 #         self.play_button.config(image=self.pause_icon)
-#         pygame.mixer.music.load(song_with_path)
+#         pygame.mixer.music.load(self.song_with_path)
 #         pygame.mixer.music.play()
+#         self.scale_update()
+
+#     def progress_scale_moved(self,x):
+#         self.root.after_cancel(self.updater)
+
+#         scale_at=self.progress_scale.get()
+
+#         song_name=self.songs_list.get('active')
+#         directory_path=None
+
+#         pygame.mixer.music.load(self.song_with_path)
+#         pygame.mixer.music.play(0,scale_at)
 #         self.scale_update()
 
 #     def scale_update(self):
@@ -316,50 +323,19 @@ App(tk.Tk(), "Subtitle editor")
 #             self.progress_scale['value'] += 1
 
 #             self.time_elapsed_label['text'] = time.strftime('%M:%S', time.gmtime(self.progress_scale.get()))
-
 #             self.updater = self.root.after(1000, self.scale_update)
 #         else:
 #             self.progress_scale['value'] = 0
 #             self.time_elapsed_label['text'] = "00:00"
-
-#     def next_song(self):
-#         self.root.after_cancel(self.updater)
-#         song_index=self.songs_list.index('active')
-#         self.songs_list.selection_clear('active')
-
-#         list_length=self.songs_list.size()
-
-#         if list_length-1 == song_index:
-#             self.songs_list.selection_set(0)
-#             self.songs_list.activate(0)
-#             self.check_play_pause()
-#         else:
-#             self.songs_list.selection_set(song_index+1)
-#             self.songs_list.activate(song_index+1)
-#             self.check_play_pause()
-
-#     def previous_song(self):
-#         self.root.after_cancel(self.updater)
-#         song_index = self.songs_list.index('active')
-#         self.songs_list.selection_clear('active')
-
-#         list_length = self.songs_list.size()
-
-#         if song_index == 0:
-#             self.songs_list.selection_set(list_length-1)
-#             self.songs_list.activate(list_length-1)
-#             self.check_play_pause()
-#         else:
-#             self.songs_list.selection_set(song_index-1)
-#             self.songs_list.activate(song_index-1)
-#             self.check_play_pause()
-
+#             self.play_button.config(image=self.play_icon)
+#             self.songs_to_play=[]
 
 # if __name__ == '__main__':
 #     window = themed_tk.ThemedTk()
 #     pygame.init()
 
 #     window.title("Music Player")
+#     window.wm_iconbitmap('images/music.ico')
 #     window.maxsize(width=750,height=550)
 #     window.minsize(width=540,height=550)
 
