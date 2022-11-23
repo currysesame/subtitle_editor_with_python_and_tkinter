@@ -234,68 +234,36 @@ App(tk.Tk(), "Subtitle editor")
 #         m1 = tk.Menu(self.menu,background="grey",tearoff=False,bd=0,activebackground="black")
 #         self.menu.add_cascade(label="Actions",menu=m1)
 
-#         m1.add_command(label="Add Song",command=self.add_songs,compound="left")
-
 #         m2 = tk.Menu(self.menu, background="grey", tearoff=False, bd=0, activebackground="black")
 #         self.menu.add_cascade(label="Delete", menu=m2)
 
 #         self.directory_list = []
 #         self.pause=False
-
+#         self.played = False
 #         self.songs_to_play=[]
 
-#     def add_songs(self):
-#         songs = filedialog.askopenfilenames(title="Select Music Folder", filetypes=(('mp3 files', '*.mp3'),))
-#         for song in songs:
-#             song_name = os.path.basename(song)
-#             directory_path = song.replace(song_name,"")
-#             self.directory_list.append({'path':directory_path,'song':song_name})
-#             self.songs_list.insert('end',song_name)
-
-#         self.songs_list.select_set('0')
-
 #     def check_play_pause(self):
-#         if self.songs_list.size() >= 1:
-#             self.songs_to_play.append(self.songs_list.get('active'))
-
-#             length=len(self.songs_to_play)
-
-#             if len(self.songs_to_play)==1:
-#                 self.play_song()
-
-#             elif self.songs_to_play[length-1]!=self.songs_to_play[length-2]:
-#                 self.root.after_cancel(self.updater)
-#                 self.play_song()
-
-#             else:
-#                 self.pause_unpause()
+#         if not self.played:
+#             self.play_song()
+#         else:
+#             self.pause_unpause()
 
 #     def pause_unpause(self):
 #         if not self.pause:
 #             self.root.after_cancel(self.updater)
 #             self.play_button.config(image=self.play_icon)
 #             self.pause=True
-
-#             self.status.config(text=f"Paused : {self.songs_list.get('active')} {self.songs_list.index('active')+1} of {self.songs_list.size()}")
 #             pygame.mixer.music.pause()
 #         else:
 #             self.pause=False
 #             self.play_button.config(image=self.pause_icon)
-#             self.status.config(text=f"Playing : {self.songs_list.get('active')} {self.songs_list.index('active')+1} of {self.songs_list.size()}")
-
 #             pygame.mixer.music.unpause()
 #             self.scale_update()
 
 #     def play_song(self):
 #         self.progress_scale['value'] = 0
 #         self.time_elapsed_label['text'] = "00:00"
-
-#         song_name = self.songs_list.get('active')
-#         self.status.config(text=f"Playing : {song_name} Song : {self.songs_list.index('active')} of "
-#                                 f"{self.songs_list.size()}")
-
 #         self.song_with_path = glob.glob('./*.mp3')[0]
-#         print(self.song_with_path)
 #         music_data = MP3(self.song_with_path)
 #         self.music_length = int(music_data.info.length)
 #         self.music_duration_label['text'] = time.strftime('%M:%S', time.gmtime(self.music_length))
@@ -304,15 +272,12 @@ App(tk.Tk(), "Subtitle editor")
 #         self.play_button.config(image=self.pause_icon)
 #         pygame.mixer.music.load(self.song_with_path)
 #         pygame.mixer.music.play()
+#         self.played = True
 #         self.scale_update()
 
 #     def progress_scale_moved(self,x):
 #         self.root.after_cancel(self.updater)
-
 #         scale_at=self.progress_scale.get()
-
-#         song_name=self.songs_list.get('active')
-#         directory_path=None
 
 #         pygame.mixer.music.load(self.song_with_path)
 #         pygame.mixer.music.play(0,scale_at)
@@ -321,7 +286,6 @@ App(tk.Tk(), "Subtitle editor")
 #     def scale_update(self):
 #         if self.progress_scale['value'] < self.music_length:
 #             self.progress_scale['value'] += 1
-
 #             self.time_elapsed_label['text'] = time.strftime('%M:%S', time.gmtime(self.progress_scale.get()))
 #             self.updater = self.root.after(1000, self.scale_update)
 #         else:
