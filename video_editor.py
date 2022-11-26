@@ -5,8 +5,6 @@ from PIL import Image, ImageTk
 from tkinter import filedialog as fd
 import glob
 import moviepy.editor as mp
-
-from ttkthemes import themed_tk
 from tkinter import ttk
 from mutagen.mp3 import MP3
 import os
@@ -17,11 +15,14 @@ class App:
         self.window = window
         self.window.title(window_title)
 
+        windowWidth = 768
+        windowHeight = 432
+
         videosources = glob.glob('./*.mp4')
         self.video_source = videosources[0]
         print()
         # open video source (by default this will try to open the computer webcam)
-        self.my_cap = MyVideoCapture(self.video_source)
+        self.my_cap = MyVideoCapture(self.video_source, windowWidth, windowHeight)
         self.total_frame_num = self.my_cap.get_total_frame_num()
         audiofile = glob.glob('./*.mp3')
         if len(audiofile) == 0:
@@ -34,7 +35,7 @@ class App:
 
         # Create a canvas that can fit the above video source size
         # self.canvas = tkinter.Canvas(window, width = self.my_cap.width, height = self.my_cap.height)
-        self.canvas = tk.Canvas(self.window, width = 960, height = 540)
+        self.canvas = tk.Canvas(self.window, width = windowWidth, height = windowHeight)
         self.canvas.pack()
 
         self.btn_pause_start=tk.Button(self.window, text="pause/start", width=50, command=self.pause_start)
@@ -51,10 +52,9 @@ class App:
 
         
         self.processBar = tk.Scale(self.window, from_=0, to=self.total_frame_num,length=600,tickinterval=int(self.total_frame_num/10), orient=tk.HORIZONTAL)
+        self.processBar.pack()
         self.subtitleBar = tk.Scale(self.window, from_=0, to=self.total_frame_num,length=600,tickinterval=int(self.total_frame_num/10), orient=tk.HORIZONTAL)
-        
-
-        background = "grey"
+        self.subtitleBar.pack()
 
         self.play_icon = Image.open('images/play.png')
         self.play_icon = self.play_icon.resize((80, 80), Image.ANTIALIAS)
@@ -64,33 +64,22 @@ class App:
         self.pause_icon = self.pause_icon.resize((80, 80), Image.ANTIALIAS)
         self.pause_icon = ImageTk.PhotoImage(self.pause_icon)
 
-        tk.Label(self.window, text="",background=background,height=7,width=120).place(x=5,y=400)
+        self.time_elapsed_label=tk.Label(self.window, text="00:00", width=50, padx=5)
+        self.time_elapsed_label.pack(anchor=tk.CENTER, expand=True)
 
-        self.time_elapsed_label = tk.Label(self.window,text="00:00", fg="black",background=background,
-                                           activebackground=background,padx=5)
-        self.time_elapsed_label.place(x=10,y=400)
+        self.music_duration_label = tk.Label(self.window,text="00:00",fg="black",padx=15)
+        self.music_duration_label.pack(anchor=tk.CENTER, expand=True)
 
-        self.music_duration_label = tk.Label(self.window,text="00:00",fg="black",background=background,
-                                             activebackground=background,padx=15)
-        self.music_duration_label.place(x=460,y=400)
 
-        self.progress_scale = ttk.Scale(self.window,orient="horizontal",style='TScale',from_=0,length=380,
+        self.progress_scale = ttk.Scale(self.window,orient="horizontal",style='TScale',from_=0,length=400,
                                         command=self.progress_scale_moved,cursor='hand2')
-        self.progress_scale.place(x=80,y=400)
+        self.progress_scale.pack(anchor=tk.CENTER, expand=True)
 
-        self.play_button = tk.Button(self.window,image=self.play_icon,command=self.check_play_pause,cursor='hand2',bd=0,
-                                     background=background,activebackground=background)
-        self.play_button.place(x=146,y=425)
+        self.play_button = tk.Button(self.window,image=self.play_icon,command=self.check_play_pause,cursor='hand2',bd=0)
+        self.play_button.pack(anchor=tk.CENTER, expand=True)
 
-        self.menu = tk.Menu(self.window)
-        self.window.configure(menu=self.menu)
-
-        self.directory_list = []
         self.pause=False
         self.played = False
-        self.songs_to_play=[]
-
-
 
 
         # read text
@@ -111,8 +100,7 @@ class App:
         
 
         print(self.processBar.get())
-        self.processBar.pack()
-        self.subtitleBar.pack()
+        
         self.count = 0
         self.count10 = 0
         self.start = 1
@@ -144,6 +132,8 @@ class App:
                 self.count += 1
             if(self.count10 % 5 == 0):
                 self.count = self.processBar.get()
+            if self.count10 == 100:
+                self.count10 = 0
             self.processBar.set(self.count)
             self.photo = ImageTk.PhotoImage(image = Image.fromarray(frame))
             self.canvas.create_image(0, 0, image = self.photo, anchor = tk.NW)
@@ -201,12 +191,14 @@ class App:
             self.progress_scale['value'] = 0
             self.time_elapsed_label['text'] = "00:00"
             self.play_button.config(image=self.play_icon)
-            self.songs_to_play=[]
 
 class MyVideoCapture:
-    def __init__(self, video_source=0):
+    def __init__(self, video_source, windowWidth, windowHeight):
         # Open the video source
         
+        self.windowWidth = windowWidth
+        self.windowHeight = windowHeight
+
         self.vid = cv2.VideoCapture(video_source)
         frame_num = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
         print('frame_num', frame_num)
@@ -214,11 +206,8 @@ class MyVideoCapture:
             raise ValueError("Unable to open video source", video_source)
 
         # Get video source width and height
-        self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
-        self.dsize_width = 960
-        self.dsize_height = 540
+        # self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+        # self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
     def get_frame(self):
         if self.vid.isOpened():
@@ -226,7 +215,7 @@ class MyVideoCapture:
             ret, frame = self.vid.read()
             if ret:
                 # Return a boolean success flag and the current frame converted to BGR
-                return (ret, cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), (self.dsize_width, self.dsize_height)))
+                return (ret, cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), (self.windowWidth, self.windowHeight)))
             else:
                 return (ret, None)
         else:
@@ -253,5 +242,3 @@ App(tk.Tk(), "Subtitle editor")
 pygame.init()
 
 # # ref: https://github.com/ritik48/Music-Player-Tutorial-Codes
-
-
