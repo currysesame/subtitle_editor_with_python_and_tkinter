@@ -34,12 +34,13 @@ class App:
 
 
         # Create a canvas that can fit the above video source size
-        # self.canvas = tkinter.Canvas(window, width = self.my_cap.width, height = self.my_cap.height)
         self.canvas = tk.Canvas(self.window, width = windowWidth, height = windowHeight)
         self.canvas.pack()
 
         self.btn_pause_start=tk.Button(self.window, text="pause/start", width=50, command=self.pause_start)
         self.btn_pause_start.pack(anchor=tk.CENTER, expand=True)
+
+        
 
         # After it is called once, the update method will be automatically called every delay milliseconds
         self.delay = 10
@@ -53,6 +54,8 @@ class App:
         
         self.processBar = tk.Scale(self.window, from_=0, to=self.total_frame_num,length=600,tickinterval=int(self.total_frame_num/10), orient=tk.HORIZONTAL)
         self.processBar.pack()
+        self.label = tk.Label(self.window, text='0')
+        self.label.pack(anchor=tk.CENTER, expand=True)
         self.subtitleBar = tk.Scale(self.window, from_=0, to=self.total_frame_num,length=600,tickinterval=int(self.total_frame_num/10), orient=tk.HORIZONTAL)
         self.subtitleBar.pack()
 
@@ -97,8 +100,6 @@ class App:
             counterLine = 0
             f.close()
 
-        
-
         print(self.processBar.get())
         
         self.count = 0
@@ -125,21 +126,19 @@ class App:
     def update(self):
         # Get a frame from the video source
         ret, frame = self.my_cap.get_frame()
-
+        self.label.config(text = 'sec: ' + str(round(self.processBar.get()/24.0, 2)))
         if ret:
             self.count10 +=1
             if(self.start == 1):
                 self.count += 1
             if(self.count10 % 5 == 0):
                 self.count = self.processBar.get()
-            if self.count10 == 100:
                 self.count10 = 0
             self.processBar.set(self.count)
             self.photo = ImageTk.PhotoImage(image = Image.fromarray(frame))
             self.canvas.create_image(0, 0, image = self.photo, anchor = tk.NW)
             self.my_cap.set_frame_in_video(self.count)
         self.window.after(self.delay, self.update)
-
 
     def check_play_pause(self):
         if not self.played:
