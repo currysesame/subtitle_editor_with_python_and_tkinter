@@ -50,7 +50,8 @@ class App:
 
         self.btn_SaveSubtitle=tk.Button(self.window, text="save subtitle", width=50, command=self.saveSubtitle)
         self.btn_SaveSubtitle.pack(anchor=tk.CENTER, expand=True)
-
+        self.btn_writeCurrentSecond=tk.Button(self.window, text="end of this subtitle (sec)", width=50, command=self.writeCurrentSecond)
+        self.btn_writeCurrentSecond.pack(anchor=tk.CENTER, expand=True)
         
         self.processBar = tk.Scale(self.window, from_=0, to=self.total_frame_num,length=600,tickinterval=int(self.total_frame_num/10), orient=tk.HORIZONTAL)
         self.processBar.pack()
@@ -109,6 +110,14 @@ class App:
 
         self.window.mainloop()
 
+    def writeCurrentSecond(self):
+        counterLine = 0
+        f = open(self.video_source[2:-4] + '.txt', "r")
+        for line in f:
+            counterLine += 1
+        self.textWidget.insert(str(counterLine+1) +'.0', ' ' + str(round(self.processBar.get()/24.0, 2)) + ' sub \n')
+        f.close()
+        self.saveSubtitle()
     def pause_start(self):
         self.my_cap.get_frame_num()
         if(self.start == 1):
@@ -135,6 +144,7 @@ class App:
                 self.count = self.processBar.get()
                 self.count10 = 0
             self.processBar.set(self.count)
+            self.photo = []
             self.photo = ImageTk.PhotoImage(image = Image.fromarray(frame))
             self.canvas.create_image(0, 0, image = self.photo, anchor = tk.NW)
             self.my_cap.set_frame_in_video(self.count)
