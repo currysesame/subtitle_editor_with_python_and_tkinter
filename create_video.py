@@ -7,16 +7,17 @@ from moviepy.config import change_settings
 
 class createVideo():
 	def __init__(self):
-		change_settings({"IMAGEMAGICK_BINARY": r"D:/PRO/ImageMagick/ImageMagick-7.1.0-Q16-HDRI/magick.exe"})
+		change_settings({"IMAGEMAGICK_BINARY": r"C:/D_server/Program_Files/imagemagick/ImageMagick-7.1.0-Q16-HDRI/magick.exe"})
 		self.file_path = glob.glob("./*.mp4")[0]#字幕を付けたい動画のパス
 		self.text_path = glob.glob('./*.txt')[0]#字幕本体
 
 	"""字幕の設定関数"""
 	def annotate(self, clip, txt, txt_color='black', fontsize=50, font='Xolonium-Bold'):
-	    #Writes a text at the bottom of the clip. 
-	    txtclip = editor.TextClip(txt, fontsize=fontsize, font=font, color=txt_color)
-	    cvc = editor.CompositeVideoClip([clip, txtclip.set_pos(('center', 'bottom'))])
-	    return cvc.set_duration(clip.duration)
+		#Writes a text at the bottom of the clip. 
+		txtclip = editor.TextClip(txt, fontsize=fontsize, font=font, color=txt_color)
+		image = editor.ImageClip("images/charaA.png")
+		cvc = editor.CompositeVideoClip([clip, txtclip.set_pos(('center', 'bottom')), image.set_pos(('left', 'bottom')).resize(height=350)])
+		return cvc.set_duration(clip.duration)
 
 	def readSubtitles(self):
 		text_file = open(self.text_path, "r")
